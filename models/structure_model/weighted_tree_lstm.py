@@ -1,22 +1,27 @@
 #!/usr/bin/env python
 # coding:utf-8
+from typing import Dict
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from numpy import array
 from torch.nn.parameter import Parameter
+
+from models.structure_model.tree import Tree
 
 
 class WeightedHierarchicalTreeLSTMEndtoEnd(nn.Module):
     def __init__(self,
-                 num_nodes,
-                 in_matrix, out_matrix,
-                 in_dim,
-                 dropout=0.0,
+                 num_nodes: int,
+                 in_matrix: array,
+                 out_matrix: array,
+                 in_dim: int,
+                 dropout: float = 0.0,
                  device=torch.device('cpu'),
-                 root=None,
-                 hierarchical_label_dict=None,
-                 label_trees=None):
+                 root: Tree = None,
+                 hierarchical_label_dict: Dict = None,
+                 label_trees: Dict = None):
         """
         TreeLSTM variant for Hierarchy Structure
         :param num_nodes: int, N
@@ -129,6 +134,7 @@ class WeightedChildSumTreeLSTMEndtoEnd(nn.Module):
         :return: bottom_up_state -> torch.FloatTensor, (N, batch, mem_dim)
         """
         for idx in range(tree.num_children):
+            # 遍历所有children节点，并向上聚合h, c
             self.forward(tree.children[idx], inputs)
 
         if tree.num_children == 0:
@@ -210,5 +216,6 @@ class WeightedTopDownTreeLSTMEndtoEnd(nn.Module):
 
         tree.top_down_state = self.node_forward(inputs[tree.idx], parent_c, parent_h)
         for idx in range(tree.num_children):
+            # 遍历所有children节点，并聚合父节点的h, c
             self.forward(tree.children[idx], inputs, tree.top_down_state, tree)
         return tree.top_down_state

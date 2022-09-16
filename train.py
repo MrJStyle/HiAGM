@@ -159,7 +159,7 @@ def train(config):
 
 
 if __name__ == "__main__":
-    configs = Configure(config_json_file=sys.argv[1])
+    configs = Configure(config_json_file="config/gcn-rcv1-v2-cpu.json")
 
     if configs.train.device_setting.device == 'cuda':
         os.system('CUDA_VISIBLE_DEVICES=' + str(configs.train.device_setting.visible_device_list))
